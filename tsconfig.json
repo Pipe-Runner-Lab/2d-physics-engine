@@ -6,7 +6,7 @@
     "skipLibCheck": true,
     "strict": false,
     "forceConsistentCasingInFileNames": true,
-    // Set to false for webpack to work
+    // INFO set to false for webpack to work
     "noEmit": false,
     "esModuleInterop": true,
     "module": "esnext",
@@ -14,8 +14,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "baseUrl": "./src/"
+    "baseUrl": "./"
   },
-  "include": ["./src/**/*.ts"],
+  "include": ["**/*.ts"],
   "exclude": ["node_modules"]
 }
