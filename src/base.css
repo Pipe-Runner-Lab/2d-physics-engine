@@ -1,0 +1,17 @@
+html, body {
+  margin: 0px;
+  height: 0px;
+}
+
+#scene-wrapper {
+  padding: 16px;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+}
+
+#scene-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
