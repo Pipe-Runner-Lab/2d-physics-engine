@@ -15,7 +15,7 @@ export default class Scene {
 
   constructor(options?: SceneOptions) {
     this.canvas = document.createElement('canvas');
-    this.canvas.height = window.innerHeight - 60;
+    this.canvas.height = window.innerHeight - 100;
     this.canvas.width = this.canvas.height;
 
     this.ctx = this.canvas.getContext('2d');
