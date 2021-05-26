@@ -1,4 +1,4 @@
 node_modules
 dist
-pkg
-crate/target
+wasm/
+native/target

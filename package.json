@@ -1,23 +1,21 @@
 {
   "name": "2d-physics-engine",
   "version": "1.0.0",
-  "description": "A very simple 2d physics engine using Rust and HTML5 canvas",
-  "main": "index.js",
+  "description": "A very simple 2d physics engine using Rust WASM and HTML5 canvas",
+  "main": "src/index.ts",
   "scripts": {
-    "build:dev": "npx webpack --watch --mode=development --config ./webpack.dev.js",
-    "serve:dev": "npx http-server ./dist",
-    "clean": "npx rimraf pkg dist",
-    "dev": "npm run clean && npx concurrently -n \"build,server\" -c \"green,yellow\" --kill-others \"npm run build:dev\" \"npm run serve:dev\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:dev": "npx webpack --watch--config ./webpack.dev.js",
+    "build:prod": "npx webpack --config ./webpack.prod.js",
+    "clean": "npx rimraf dist",
+    "serve:dev": "npx webpack serve --config webpack.dev.js",
+    "dev": "npm run clean && npm run serve:dev"
   },
   "author": "Aakash Mallik",
   "license": "ISC",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
-    "clean-webpack-plugin": "^3.0.0",
-    "concurrently": "^5.3.0",
-    "copy-webpack-plugin": "^7.0.0",
     "css-loader": "^5.0.1",
     "eslint": "^7.24.0",
     "eslint-config-airbnb-typescript": "^12.3.1",
@@ -25,7 +23,6 @@
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-prettier": "^3.4.0",
     "html-webpack-plugin": "^4.5.1",
-    "http-server": "^0.12.3",
     "prettier": "^2.2.1",
     "style-loader": "^2.0.0",
     "ts-loader": "^8.0.14",
@@ -33,6 +30,8 @@
     "webpack": "^5.18.0",
     "webpack-cli": "^4.4.0",
     "@wasm-tool/wasm-pack-plugin": "^1.1.0",
-    "rimraf": "^3.0.0"
+    "rimraf": "^3.0.0",
+    "webpack-dev-server": "^3.11.2",
+    "tsconfig-paths-webpack-plugin": "^3.5.1"
   }
 }
