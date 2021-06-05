@@ -9,21 +9,15 @@ export class Vector2D {
   }
 
   add(vec: Vector2D): Vector2D {
-    this.i += vec.i;
-    this.j += vec.j;
-    return this;
+    return new Vector2D(this.i + vec.j, this.j + vec.j);
   }
 
   sub(vec: Vector2D): Vector2D {
-    this.i -= vec.i;
-    this.j -= vec.j;
-    return this;
+    return new Vector2D(this.i - vec.j, this.j - vec.j);
   }
 
   mul(scalar: number): Vector2D {
-    this.i *= scalar;
-    this.j *= scalar;
-    return this;
+    return new Vector2D(this.i * scalar, this.j * scalar);
   }
 }
 

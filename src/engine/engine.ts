@@ -1,26 +1,31 @@
-import { Assets } from 'assets/types';
+import { PointAsset } from 'assets/types';
 import Scene from 'scene';
-
-type EngineProps = {
-  scene: Scene;
-};
+import { EngineProps } from './types';
 
 class Engine {
   scene: Scene;
 
-  assetList: Assets[];
+  dt: number;
+
+  assetList: PointAsset[];
 
   constructor({ scene }: EngineProps) {
+    this.assetList = [];
     this.scene = scene;
+    this.dt = 1;
   }
 
-  addAssets(asset: Assets): void {
+  addAsset(asset: PointAsset): void {
     this.assetList.push(asset);
   }
 
   render(): void {
+    this.scene.cleanUp();
+
     this.assetList.forEach((asset) => {
-      asset.render();
+      this.scene.ctx.save();
+      asset.render(this.scene.ctx, this.dt);
+      this.scene.ctx.restore();
     });
   }
 }

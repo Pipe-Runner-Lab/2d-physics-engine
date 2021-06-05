@@ -1,16 +1,16 @@
-type SceneOptions = {
-  backgroundColor: string;
-};
-
-interface Scene {
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-  width: number;
-  height: number;
-  backgroundColor: string;
-}
+import { SceneOptions } from './types';
 
 class Scene implements Scene {
+  canvas: HTMLCanvasElement;
+
+  ctx: CanvasRenderingContext2D;
+
+  backgroundColor: string;
+
+  width: number;
+
+  height: number;
+
   constructor(options?: SceneOptions) {
     this.canvas = document.createElement('canvas');
     this.canvas.height = window.innerHeight - 100;

@@ -3,6 +3,7 @@ import Scene from 'scene';
 import Engine from 'engine';
 // import { test } from '../wasm';
 import './base.css';
+import Ball from 'assets/ball';
 
 // console.log('I am a fun page');
 
@@ -13,5 +14,7 @@ const scene = new Scene({
 });
 
 const engine = new Engine({ scene });
+
+engine.addAsset(new Ball({ x: 100, y: 100, radius: 50 }));
 
 engine.render();
