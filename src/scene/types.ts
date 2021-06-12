@@ -14,6 +14,7 @@ export interface SceneInterface {
 }
 
 export enum SceneEventType {
-  CLICK = 'click',
-  DRAG = 'mousemove'
+  MOUSE_DOWN = 'mousedown',
+  MOUSE_MOVE = 'mousemove',
+  MOUSE_UP = 'mouseup'
 }

@@ -14,7 +14,7 @@ const scene = new Scene({
   mouseEvents: true
 });
 
-const engine = new Engine({ scene });
+const engine = new Engine({ scene, guideLines: true });
 
 engine.addAsset(new Ball({ x: 100, y: 100, radius: 50 }));
 engine.addAsset(new Ball({ x: 300, y: 300, radius: 90 }));
@@ -22,4 +22,9 @@ engine.addAsset(new Ball({ x: 600, y: 600, radius: 30 }));
 engine.addAsset(new Ball({ x: 500, y: 100, radius: 40 }));
 engine.addAsset(new Ball({ x: 150, y: 550, radius: 70 }));
 
-engine.render();
+function renderLoop(timestamp = 0): void {
+  engine.render();
+  requestAnimationFrame(renderLoop);
+}
+
+renderLoop();

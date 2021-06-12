@@ -15,13 +15,16 @@ class Scene implements SceneInterface {
 
   left: number;
 
-  clickObserverList: ((x: number, y: number) => void)[];
+  mouseDownObserverList: ((x: number, y: number) => void)[];
 
-  dragObserverList: ((x: number, y: number) => void)[];
+  mouseMoveObserverList: ((x: number, y: number) => void)[];
+
+  mouseUpObserverList: ((x: number, y: number) => void)[];
 
   constructor(options?: SceneOptions) {
-    this.clickObserverList = [];
-    this.dragObserverList = [];
+    this.mouseDownObserverList = [];
+    this.mouseMoveObserverList = [];
+    this.mouseUpObserverList = [];
 
     this.canvas = document.createElement('canvas');
     this.canvas.height = window.innerHeight - 100;
@@ -48,32 +51,51 @@ class Scene implements SceneInterface {
     this.left = rect.left;
 
     if (options.mouseEvents) {
-      this.canvas.addEventListener(SceneEventType.CLICK, this.triggerClickObserver.bind(this));
-      this.canvas.addEventListener(SceneEventType.DRAG, this.triggerDragObserver.bind(this));
+      this.canvas.addEventListener(
+        SceneEventType.MOUSE_DOWN,
+        this.triggerMouseDownObservers.bind(this)
+      );
+      this.canvas.addEventListener(
+        SceneEventType.MOUSE_MOVE,
+        this.triggerMouseMoveObserver.bind(this)
+      );
+      this.canvas.addEventListener(
+        SceneEventType.MOUSE_UP,
+        this.triggerMouseUpObservers.bind(this)
+      );
     }
 
     this.cleanUp();
   }
 
-  triggerClickObserver(event: MouseEvent): void {
-    this.clickObserverList.forEach((observer) =>
+  triggerMouseDownObservers(event: MouseEvent): void {
+    this.mouseDownObserverList.forEach((observer) =>
       observer(event.clientX - this.left, event.clientY - this.top)
     );
   }
 
-  triggerDragObserver(event: MouseEvent): void {
-    this.dragObserverList.forEach((observer) =>
+  triggerMouseMoveObserver(event: MouseEvent): void {
+    this.mouseMoveObserverList.forEach((observer) =>
+      observer(event.clientX - this.left, event.clientY - this.top)
+    );
+  }
+
+  triggerMouseUpObservers(event: MouseEvent): void {
+    this.mouseUpObserverList.forEach((observer) =>
       observer(event.clientX - this.left, event.clientY - this.top)
     );
   }
 
   registerObserver(eventType: SceneEventType, observer: (x: number, y: number) => void): void {
     switch (eventType) {
-      case SceneEventType.CLICK:
-        this.clickObserverList.push(observer);
+      case SceneEventType.MOUSE_DOWN:
+        this.mouseDownObserverList.push(observer);
         break;
-      case SceneEventType.DRAG:
-        this.dragObserverList.push(observer);
+      case SceneEventType.MOUSE_MOVE:
+        this.mouseMoveObserverList.push(observer);
+        break;
+      case SceneEventType.MOUSE_UP:
+        this.mouseUpObserverList.push(observer);
         break;
       default:
         break;
@@ -81,8 +103,9 @@ class Scene implements SceneInterface {
   }
 
   deregisterObserver(observer: (x: number, y: number) => void): void {
-    this.clickObserverList = this.clickObserverList.filter((item) => item !== observer);
-    this.dragObserverList = this.dragObserverList.filter((item) => item !== observer);
+    this.mouseDownObserverList = this.mouseDownObserverList.filter((item) => item !== observer);
+    this.mouseMoveObserverList = this.mouseMoveObserverList.filter((item) => item !== observer);
+    this.mouseUpObserverList = this.mouseUpObserverList.filter((item) => item !== observer);
   }
 
   cleanUp(): void {
