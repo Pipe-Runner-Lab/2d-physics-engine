@@ -23,13 +23,14 @@ class Ball implements GenericBall {
     this.acc = new Vector2D(0, 0);
   }
 
-  render(ctx: CanvasRenderingContext2D, dt: number): void {
+  traceNext(dt: number): void {
     const dVel = this.acc.mul(dt);
-    this.vel = this.vel.add(dVel);
-
     const dPos = this.vel.mul(dt);
+    this.vel = this.vel.add(dVel);
     this.pos = this.pos.add(dPos);
+  }
 
+  render(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath();
     ctx.fillStyle = 'orange';
     ctx.strokeStyle = 'red';
@@ -44,4 +45,5 @@ export default Ball;
 
 /**
  * 1. We are not considering t = 0 case
+ * 2. Calculate dVel and dPost first, then update together
  */

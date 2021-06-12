@@ -19,6 +19,23 @@ export class Vector2D {
   mul(scalar: number): Vector2D {
     return new Vector2D(this.i * scalar, this.j * scalar);
   }
+
+  magSqr(): number {
+    return this.i ** 2 + this.j ** 2;
+  }
+
+  mag(): number {
+    return Math.sqrt(this.i ** 2 + this.j ** 2);
+  }
+
+  unit(): Vector2D {
+    const mag = this.mag();
+    return this.mul(1 / mag);
+  }
+
+  dot(vec: Vector2D): number {
+    return this.i * vec.i + this.j * vec.j;
+  }
 }
 
 /**

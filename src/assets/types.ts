@@ -9,5 +9,11 @@ export interface PointAsset {
 
   mass: number;
 
-  render: (ctx: CanvasRenderingContext2D, dt: number) => void;
+  render: (ctx: CanvasRenderingContext2D) => void;
+
+  traceNext: (dt: number) => void;
 }
+
+/**
+ * 1. Point object will have one grab point
+ */
