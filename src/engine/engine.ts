@@ -44,6 +44,7 @@ class Engine {
   }
 
   addAsset(asset: Asset): void {
+    if (this.guideLines) asset.enableGuideLine();
     this.assetList.push(asset);
   }
 
@@ -56,11 +57,30 @@ class Engine {
     });
   }
 
+  renderGuideLines(): void {
+    this.scene.ctx.save();
+    this.scene.ctx.strokeStyle = 'green';
+    this.scene.ctx.moveTo(this.grabbedAsset.grabPos.i, this.grabbedAsset.grabPos.j);
+    this.scene.ctx.lineTo(this.mousePos.i, this.mousePos.j);
+    this.scene.ctx.stroke();
+    this.scene.ctx.restore();
+  }
+
   render(): void {
     this.scene.cleanUp();
 
     this.assetList.forEach((asset) => {
-      asset.traceNext(this.dt);
+      if (asset === this.grabbedAsset) {
+        asset.applyForce(
+          this.dt,
+          new Vector2D(
+            this.mousePos.i - this.grabbedAsset.grabPos.i,
+            this.mousePos.j - this.grabbedAsset.grabPos.j
+          )
+        );
+      } else {
+        asset.applyForce(this.dt, new Vector2D(0, 0));
+      }
     });
 
     // Detect collision here
@@ -73,15 +93,7 @@ class Engine {
       this.scene.ctx.restore();
     });
 
-    // force guideline for engine
-    if (this.guideLines && this.grabbedAsset) {
-      this.scene.ctx.save();
-      this.scene.ctx.strokeStyle = 'green';
-      this.scene.ctx.moveTo(this.grabbedAsset.grabPos.i, this.grabbedAsset.grabPos.j);
-      this.scene.ctx.lineTo(this.mousePos.i, this.mousePos.j);
-      this.scene.ctx.stroke();
-      this.scene.ctx.restore();
-    }
+    if (this.guideLines && this.grabbedAsset) this.renderGuideLines();
   }
 }
 

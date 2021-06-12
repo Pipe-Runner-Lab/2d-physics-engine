@@ -12,9 +12,9 @@ class Ball implements GenericBall {
 
   isGrabbed: boolean;
 
-  acc: Vector2D;
-
   mass: number;
+
+  guideLines: boolean;
 
   constructor({ x, y, radius = 1, mass = 1 }: BallProps) {
     this.radius = radius;
@@ -26,9 +26,17 @@ class Ball implements GenericBall {
 
     this.vel = new Vector2D(0, 0);
 
-    this.acc = new Vector2D(0, 0);
-
     this.isGrabbed = false;
+
+    this.guideLines = false;
+  }
+
+  enableGuideLine(): void {
+    this.guideLines = true;
+  }
+
+  disableGuideLine(): void {
+    this.guideLines = false;
   }
 
   shouldGrab(x: number, y: number): boolean {
@@ -43,11 +51,14 @@ class Ball implements GenericBall {
     this.isGrabbed = false;
   }
 
-  traceNext(dt: number): void {
-    const dVel = this.acc.mul(dt);
+  applyForce(dt: number, force: Vector2D): void {
+    const acc = force.mul(1 / this.mass).mul(1 / 1000);
+    const dVel = acc.mul(dt);
     const dPos = this.vel.mul(dt);
     this.vel = this.vel.add(dVel);
     this.pos = this.pos.add(dPos);
+
+    this.grabPos = this.pos;
   }
 
   render(ctx: CanvasRenderingContext2D): void {

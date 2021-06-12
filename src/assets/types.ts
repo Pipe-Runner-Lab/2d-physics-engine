@@ -13,16 +13,20 @@ export interface Asset {
 
   render: (ctx: CanvasRenderingContext2D) => void;
 
-  traceNext: (dt: number) => void;
+  applyForce: (dt: number, force: Vector2D) => void;
 
   setGrab: (x: number, y: number) => void;
 
   unsetGrab: () => void;
+
+  guideLines: boolean;
+
+  enableGuideLine: () => void;
+
+  disableGuideLine: () => void;
 }
 
 export interface PointAsset extends Asset {
-  acc: Vector2D;
-
   mass: number;
 }
 
