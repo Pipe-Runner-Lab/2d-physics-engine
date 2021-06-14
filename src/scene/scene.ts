@@ -1,34 +1,26 @@
-import { SceneOptions, SceneInterface, SceneEventType } from './types';
+import { SceneOptions, SceneInterface, SceneEventType, ObserverCallback } from './types';
 
 class Scene implements SceneInterface {
   canvas: HTMLCanvasElement;
 
   ctx: CanvasRenderingContext2D;
 
-  backgroundColor: string;
+  private _backgroundColor: string;
 
-  width: number;
+  private _top: number;
 
-  height: number;
+  private _left: number;
 
-  top: number;
+  private _mouseDownObserverList: ObserverCallback[] = [];
 
-  left: number;
+  private _mouseMoveObserverList: ObserverCallback[] = [];
 
-  mouseDownObserverList: ((x: number, y: number) => void)[];
-
-  mouseMoveObserverList: ((x: number, y: number) => void)[];
-
-  mouseUpObserverList: ((x: number, y: number) => void)[];
+  private _mouseUpObserverList: ObserverCallback[] = [];
 
   constructor(options?: SceneOptions) {
-    this.mouseDownObserverList = [];
-    this.mouseMoveObserverList = [];
-    this.mouseUpObserverList = [];
-
     this.canvas = document.createElement('canvas');
     this.canvas.height = window.innerHeight - 100;
-    this.canvas.width = this.canvas.height;
+    this.canvas.width = window.innerWidth - 100;
 
     this.ctx = this.canvas.getContext('2d');
 
@@ -42,77 +34,89 @@ class Scene implements SceneInterface {
 
     document.querySelector('body').appendChild(container);
 
-    this.height = this.canvas.height;
-    this.width = this.canvas.width;
-    this.backgroundColor = options?.backgroundColor ?? 'white';
+    this._backgroundColor = options?.backgroundColor ?? 'white';
 
     const rect = this.canvas.getBoundingClientRect();
-    this.top = rect.top;
-    this.left = rect.left;
+    this._top = rect.top;
+    this._left = rect.left;
 
     if (options.mouseEvents) {
       this.canvas.addEventListener(
         SceneEventType.MOUSE_DOWN,
-        this.triggerMouseDownObservers.bind(this)
+        this._triggerMouseDownObservers.bind(this)
       );
       this.canvas.addEventListener(
         SceneEventType.MOUSE_MOVE,
-        this.triggerMouseMoveObserver.bind(this)
+        this._triggerMouseMoveObserver.bind(this)
       );
       this.canvas.addEventListener(
         SceneEventType.MOUSE_UP,
-        this.triggerMouseUpObservers.bind(this)
+        this._triggerMouseUpObservers.bind(this)
       );
     }
 
     this.cleanUp();
   }
 
-  triggerMouseDownObservers(event: MouseEvent): void {
-    this.mouseDownObserverList.forEach((observer) =>
-      observer(event.clientX - this.left, event.clientY - this.top)
+  private _triggerMouseDownObservers(event: MouseEvent): void {
+    this._mouseDownObserverList.forEach((observer) =>
+      observer(event.clientX - this._left, event.clientY - this._top)
     );
   }
 
-  triggerMouseMoveObserver(event: MouseEvent): void {
-    this.mouseMoveObserverList.forEach((observer) =>
-      observer(event.clientX - this.left, event.clientY - this.top)
+  private _triggerMouseMoveObserver(event: MouseEvent): void {
+    this._mouseMoveObserverList.forEach((observer) =>
+      observer(event.clientX - this._left, event.clientY - this._top)
     );
   }
 
-  triggerMouseUpObservers(event: MouseEvent): void {
-    this.mouseUpObserverList.forEach((observer) =>
-      observer(event.clientX - this.left, event.clientY - this.top)
+  private _triggerMouseUpObservers(event: MouseEvent): void {
+    this._mouseUpObserverList.forEach((observer) =>
+      observer(event.clientX - this._left, event.clientY - this._top)
     );
   }
 
-  registerObserver(eventType: SceneEventType, observer: (x: number, y: number) => void): void {
+  registerObserver(eventType: SceneEventType, observer: ObserverCallback): void {
     switch (eventType) {
       case SceneEventType.MOUSE_DOWN:
-        this.mouseDownObserverList.push(observer);
+        this._mouseDownObserverList.push(observer);
         break;
       case SceneEventType.MOUSE_MOVE:
-        this.mouseMoveObserverList.push(observer);
+        this._mouseMoveObserverList.push(observer);
         break;
       case SceneEventType.MOUSE_UP:
-        this.mouseUpObserverList.push(observer);
+        this._mouseUpObserverList.push(observer);
         break;
       default:
         break;
     }
   }
 
-  deregisterObserver(observer: (x: number, y: number) => void): void {
-    this.mouseDownObserverList = this.mouseDownObserverList.filter((item) => item !== observer);
-    this.mouseMoveObserverList = this.mouseMoveObserverList.filter((item) => item !== observer);
-    this.mouseUpObserverList = this.mouseUpObserverList.filter((item) => item !== observer);
+  deregisterObserver(eventType: SceneEventType, observer: ObserverCallback): void {
+    switch (eventType) {
+      case SceneEventType.MOUSE_DOWN:
+        this._mouseDownObserverList = this._mouseDownObserverList.filter(
+          (item) => item !== observer
+        );
+        break;
+      case SceneEventType.MOUSE_MOVE:
+        this._mouseMoveObserverList = this._mouseMoveObserverList.filter(
+          (item) => item !== observer
+        );
+        break;
+      case SceneEventType.MOUSE_UP:
+        this._mouseUpObserverList = this._mouseUpObserverList.filter((item) => item !== observer);
+        break;
+      default:
+        break;
+    }
   }
 
   cleanUp(): void {
-    this.ctx.clearRect(0, 0, this.height, this.width);
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    this.ctx.fillStyle = this.backgroundColor;
-    this.ctx.fillRect(0, 0, this.height, this.height);
+    this.ctx.fillStyle = this._backgroundColor;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 }
 

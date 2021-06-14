@@ -6,12 +6,13 @@ export type SceneOptions = {
 export interface SceneInterface {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
-  width: number;
-  height: number;
-  top: number;
-  left: number;
-  backgroundColor: string;
+
+  registerObserver: (eventType: SceneEventType, observer: ObserverCallback) => void;
+  deregisterObserver: (eventType: SceneEventType, observer: ObserverCallback) => void;
+  cleanUp: () => void;
 }
+
+export type ObserverCallback = (x: number, y: number) => void;
 
 export enum SceneEventType {
   MOUSE_DOWN = 'mousedown',

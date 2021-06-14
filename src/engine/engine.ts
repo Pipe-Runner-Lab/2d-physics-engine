@@ -1,13 +1,13 @@
+import { GenericBall } from 'assets/ball/types';
 import { Asset } from 'assets/types';
 import Scene from 'scene';
 import { SceneEventType } from 'scene/types';
+import { DEFAULT_TIME_DELTA, FORCE_DILUTION_FACTOR } from 'utils/constant';
 import { Vector2D } from 'utils/vector';
 import { EngineProps } from './types';
 
 class Engine {
   scene: Scene;
-
-  dt: number;
 
   assetList: Asset[];
 
@@ -18,7 +18,6 @@ class Engine {
   mousePos: Vector2D;
 
   constructor({ scene, guideLines = false }: EngineProps) {
-    this.dt = 1;
     this.scene = scene;
 
     // array of all objects add to engine
@@ -44,7 +43,7 @@ class Engine {
   }
 
   addAsset(asset: Asset): void {
-    if (this.guideLines) asset.enableGuideLine();
+    asset.setGuideLines(this.guideLines);
     this.assetList.push(asset);
   }
 
@@ -57,6 +56,20 @@ class Engine {
     });
   }
 
+  static isPenetrating(_assetL: Asset, _assetR: Asset): boolean {
+    const assetL = _assetL as GenericBall;
+    const assetR = _assetR as GenericBall;
+    if (assetL.pos.sub(assetR.pos).mag() < assetL.radius + assetR.radius) {
+      return true;
+    }
+    return false;
+  }
+
+  static resolvePenetration(_assetL: Asset, _assetR: Asset): void {
+    const assetL = _assetL as GenericBall;
+    const assetR = _assetR as GenericBall;
+  }
+
   renderGuideLines(): void {
     this.scene.ctx.save();
     this.scene.ctx.strokeStyle = 'green';
@@ -66,32 +79,49 @@ class Engine {
     this.scene.ctx.restore();
   }
 
-  render(): void {
+  render(t: number): void {
     this.scene.cleanUp();
 
-    this.assetList.forEach((asset) => {
+    for (let i = 0, len = this.assetList.length; i < len; i += 1) {
+      const asset = this.assetList[i];
+
       if (asset === this.grabbedAsset) {
-        asset.applyForce(
-          this.dt,
-          new Vector2D(
-            this.mousePos.i - this.grabbedAsset.grabPos.i,
-            this.mousePos.j - this.grabbedAsset.grabPos.j
-          )
+        const forceVec = new Vector2D(
+          this.mousePos.i - this.grabbedAsset.grabPos.i,
+          this.mousePos.j - this.grabbedAsset.grabPos.j
         );
+        asset.calculateNextState({
+          dt: DEFAULT_TIME_DELTA,
+          force: forceVec.mul(FORCE_DILUTION_FACTOR)
+        });
       } else {
-        asset.applyForce(this.dt, new Vector2D(0, 0));
+        asset.calculateNextState({ dt: DEFAULT_TIME_DELTA });
       }
-    });
+    }
 
     // Detect collision here
+    for (let i = 0, iLen = this.assetList.length - 1; i < iLen; i += 1) {
+      const assetL = this.assetList[i];
+
+      for (let j = i + 1, jLen = iLen; j < jLen; j += 1) {
+        const assetR = this.assetList[j];
+
+        const isPenetrating = Engine.isPenetrating(assetL, assetR);
+
+        // if penetrates then obviously collides
+        const isColliding = false;
+      }
+    }
 
     // Resolve collision
 
-    this.assetList.forEach((asset) => {
+    for (let i = 0, len = this.assetList.length; i < len; i += 1) {
+      const asset = this.assetList[i];
+
       this.scene.ctx.save();
       asset.render(this.scene.ctx);
       this.scene.ctx.restore();
-    });
+    }
 
     if (this.guideLines && this.grabbedAsset) this.renderGuideLines();
   }

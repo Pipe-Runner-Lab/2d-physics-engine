@@ -1,20 +1,22 @@
+import { StateUpdateProp } from 'assets/types';
+import { ACC_GRAVITY } from 'utils/constant';
 import { Vector2D } from 'utils/vector';
 import { BallProps, GenericBall } from './types';
 
 class Ball implements GenericBall {
-  radius: number;
+  mass: number;
 
   pos: Vector2D;
 
-  vel: Vector2D;
+  vel = new Vector2D(0, 0);
 
   grabPos: Vector2D;
 
-  isGrabbed: boolean;
+  isGrabbed = false;
 
-  mass: number;
+  guideLines = false;
 
-  guideLines: boolean;
+  radius: number;
 
   constructor({ x, y, radius = 1, mass = 1 }: BallProps) {
     this.radius = radius;
@@ -22,27 +24,18 @@ class Ball implements GenericBall {
 
     this.pos = new Vector2D(x, y);
 
-    this.grabPos = this.pos;
-
-    this.vel = new Vector2D(0, 0);
-
-    this.isGrabbed = false;
-
-    this.guideLines = false;
+    this.grabPos = new Vector2D(x, y);
   }
 
-  enableGuideLine(): void {
-    this.guideLines = true;
-  }
-
-  disableGuideLine(): void {
-    this.guideLines = false;
+  setGuideLines(value: boolean): void {
+    this.guideLines = value;
   }
 
   shouldGrab(x: number, y: number): boolean {
     return (x - this.pos.i) ** 2 + (y - this.pos.j) ** 2 < this.radius ** 2;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setGrab(x: number, y: number): void {
     this.isGrabbed = true;
   }
@@ -51,11 +44,14 @@ class Ball implements GenericBall {
     this.isGrabbed = false;
   }
 
-  applyForce(dt: number, force: Vector2D): void {
-    const acc = force.mul(1 / this.mass).mul(1 / 1000);
-    const dVel = acc.mul(dt);
+  calculateNextState({ dt, force }: StateUpdateProp): void {
+    let acc = ACC_GRAVITY;
+    acc = force ? acc.add(force).mul(1 / this.mass) : acc;
+    const dVel = acc?.mul(dt);
     const dPos = this.vel.mul(dt);
-    this.vel = this.vel.add(dVel);
+
+    if (dVel) this.vel = this.vel.add(dVel);
+
     this.pos = this.pos.add(dPos);
 
     this.grabPos = this.pos;
@@ -63,7 +59,9 @@ class Ball implements GenericBall {
 
   render(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath();
-    ctx.fillStyle = this.isGrabbed ? 'red' : 'orange';
+    ctx.fillStyle = 'orange';
+    if (this.isGrabbed) ctx.fillStyle = 'red';
+    if (this.vel.mag()) ctx.fillStyle = 'blue';
     ctx.strokeStyle = 'red';
     ctx.arc(this.pos.i, this.pos.j, this.radius, 0, Math.PI * 2);
     ctx.fill();
