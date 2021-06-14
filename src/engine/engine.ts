@@ -68,6 +68,14 @@ class Engine {
   static resolvePenetration(_assetL: Asset, _assetR: Asset): void {
     const assetL = _assetL as GenericBall;
     const assetR = _assetR as GenericBall;
+
+    const lineOfActionVec = assetL.pos.sub(assetR.pos);
+
+    const semiPenDist = (assetL.radius + assetR.radius - lineOfActionVec.mag()) / 2;
+    const lineOfActionUnitVec = lineOfActionVec.unit();
+
+    assetL.pos = assetL.pos.add(lineOfActionUnitVec.mul(semiPenDist));
+    assetR.pos = assetR.pos.add(lineOfActionUnitVec.mul(-semiPenDist));
   }
 
   renderGuideLines(): void {
@@ -107,6 +115,7 @@ class Engine {
         const assetR = this.assetList[j];
 
         const isPenetrating = Engine.isPenetrating(assetL, assetR);
+        if (isPenetrating) Engine.resolvePenetration(assetL, assetR);
 
         // if penetrates then obviously collides
         const isColliding = false;
