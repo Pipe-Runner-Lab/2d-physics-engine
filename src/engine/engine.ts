@@ -71,7 +71,7 @@ class Engine {
 
     const lineOfActionVec = assetL.pos.sub(assetR.pos);
 
-    const semiPenDist = (assetL.radius + assetR.radius - lineOfActionVec.mag()) / 2;
+    const semiPenDist = (assetL.radius + assetR.radius - lineOfActionVec.mag()) / (2 * Math.SQRT2);
     const lineOfActionUnitVec = lineOfActionVec.unit();
 
     assetL.pos = assetL.pos.add(lineOfActionUnitVec.mul(semiPenDist));
@@ -108,10 +108,10 @@ class Engine {
     }
 
     // Detect collision here
-    for (let i = 0, iLen = this.assetList.length - 1; i < iLen; i += 1) {
+    for (let i = 0, iLen = this.assetList.length; i < iLen - 1; i += 1) {
       const assetL = this.assetList[i];
 
-      for (let j = i + 1, jLen = iLen; j < jLen; j += 1) {
+      for (let j = i + 1; j < iLen; j += 1) {
         const assetR = this.assetList[j];
 
         const isPenetrating = Engine.isPenetrating(assetL, assetR);
