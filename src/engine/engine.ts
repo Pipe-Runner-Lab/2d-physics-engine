@@ -69,13 +69,50 @@ class Engine {
     const assetL = _assetL as GenericBall;
     const assetR = _assetR as GenericBall;
 
-    const lineOfActionVec = assetL.pos.sub(assetR.pos);
+    const penNormalVec = assetL.pos.sub(assetR.pos);
+    const penNormalUnitVec = penNormalVec.unit();
 
-    const semiPenDist = (assetL.radius + assetR.radius - lineOfActionVec.mag()) / (2 * Math.SQRT2);
-    const lineOfActionUnitVec = lineOfActionVec.unit();
+    const semiPenDist = (assetL.radius + assetR.radius - penNormalVec.mag()) / (2 * Math.SQRT2);
 
-    assetL.pos = assetL.pos.add(lineOfActionUnitVec.mul(semiPenDist));
-    assetR.pos = assetR.pos.add(lineOfActionUnitVec.mul(-semiPenDist));
+    assetL.pos = assetL.pos.add(penNormalUnitVec.mul(semiPenDist));
+    assetR.pos = assetR.pos.add(penNormalUnitVec.mul(-semiPenDist));
+  }
+
+  static isColliding(_assetL: Asset, _assetR: Asset): boolean {
+    const assetL = _assetL as GenericBall;
+    const assetR = _assetR as GenericBall;
+    if (assetL.pos.sub(assetR.pos).mag() === assetL.radius + assetR.radius) {
+      return true;
+    }
+    return false;
+  }
+
+  static resolveCollision(_assetL: Asset, _assetR: Asset): void {
+    const assetL = _assetL as GenericBall;
+    const assetR = _assetR as GenericBall;
+
+    const colNormalVec = assetL.pos.sub(assetR.pos);
+    const colNormalUnitVec = colNormalVec.unit();
+
+    const normalInitialVelL = colNormalUnitVec.mul(-1).dot(assetL.vel);
+    const normalInitialVelR = colNormalUnitVec.dot(assetR.vel);
+
+    const massSum = assetL.mass + assetR.mass;
+
+    const normalFinalVelL =
+      (normalInitialVelL * (assetL.mass - assetR.mass) + 2 * assetL.mass * normalInitialVelR) /
+      massSum;
+    const normalFinalVelR =
+      (normalInitialVelR * (assetR.mass - assetL.mass) + 2 * assetR.mass * normalInitialVelL) /
+      massSum;
+
+    assetL.vel = assetL.vel
+      .add(colNormalUnitVec.mul(normalInitialVelL))
+      .add(colNormalUnitVec.mul(normalFinalVelL));
+
+    assetR.vel = assetR.vel
+      .add(colNormalUnitVec.mul(-1).mul(normalInitialVelR))
+      .add(colNormalUnitVec.mul(-1).mul(normalFinalVelR));
   }
 
   renderGuideLines(): void {
@@ -117,8 +154,8 @@ class Engine {
         const isPenetrating = Engine.isPenetrating(assetL, assetR);
         if (isPenetrating) Engine.resolvePenetration(assetL, assetR);
 
-        // if penetrates then obviously collides
-        const isColliding = false;
+        const isColliding = isPenetrating || Engine.isColliding(assetL, assetR);
+        if (isColliding) Engine.resolveCollision(assetL, assetR);
       }
     }
 
