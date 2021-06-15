@@ -87,7 +87,6 @@ class Engine {
       }
     }
 
-    // Detect collision here
     for (let i = 0, iLen = this.assetList.length; i < iLen - 1; i += 1) {
       const assetL = this.assetList[i];
 
@@ -101,8 +100,6 @@ class Engine {
         if (isColliding) CollisionKit.resolveCollision(assetL, assetR);
       }
     }
-
-    // Resolve collision
 
     for (let i = 0, len = this.assetList.length; i < len; i += 1) {
       const asset = this.assetList[i];
