@@ -5,6 +5,8 @@ import { SceneEventType } from 'scene/types';
 import { DEFAULT_TIME_DELTA, FORCE_DILUTION_FACTOR } from 'utils/constant';
 import { Vector2D } from 'utils/vector';
 import { EngineProps } from './types';
+import { PenetrationKit } from './utils/penetration';
+import { CollisionKit } from './utils/collision';
 
 class Engine {
   scene: Scene;
@@ -56,65 +58,6 @@ class Engine {
     });
   }
 
-  static isPenetrating(_assetL: Asset, _assetR: Asset): boolean {
-    const assetL = _assetL as GenericBall;
-    const assetR = _assetR as GenericBall;
-    if (assetL.pos.sub(assetR.pos).mag() < assetL.radius + assetR.radius) {
-      return true;
-    }
-    return false;
-  }
-
-  static resolvePenetration(_assetL: Asset, _assetR: Asset): void {
-    const assetL = _assetL as GenericBall;
-    const assetR = _assetR as GenericBall;
-
-    const penNormalVec = assetL.pos.sub(assetR.pos);
-    const penNormalUnitVec = penNormalVec.unit();
-
-    const semiPenDist = (assetL.radius + assetR.radius - penNormalVec.mag()) / (2 * Math.SQRT2);
-
-    assetL.pos = assetL.pos.add(penNormalUnitVec.mul(semiPenDist));
-    assetR.pos = assetR.pos.add(penNormalUnitVec.mul(-semiPenDist));
-  }
-
-  static isColliding(_assetL: Asset, _assetR: Asset): boolean {
-    const assetL = _assetL as GenericBall;
-    const assetR = _assetR as GenericBall;
-    if (assetL.pos.sub(assetR.pos).mag() === assetL.radius + assetR.radius) {
-      return true;
-    }
-    return false;
-  }
-
-  static resolveCollision(_assetL: Asset, _assetR: Asset): void {
-    const assetL = _assetL as GenericBall;
-    const assetR = _assetR as GenericBall;
-
-    const colNormalVec = assetL.pos.sub(assetR.pos);
-    const colNormalUnitVec = colNormalVec.unit();
-
-    const normalInitialVelL = colNormalUnitVec.mul(-1).dot(assetL.vel);
-    const normalInitialVelR = colNormalUnitVec.dot(assetR.vel);
-
-    const massSum = assetL.mass + assetR.mass;
-
-    const normalFinalVelL =
-      (normalInitialVelL * (assetL.mass - assetR.mass) + 2 * assetL.mass * normalInitialVelR) /
-      massSum;
-    const normalFinalVelR =
-      (normalInitialVelR * (assetR.mass - assetL.mass) + 2 * assetR.mass * normalInitialVelL) /
-      massSum;
-
-    assetL.vel = assetL.vel
-      .add(colNormalUnitVec.mul(normalInitialVelL))
-      .add(colNormalUnitVec.mul(normalFinalVelL));
-
-    assetR.vel = assetR.vel
-      .add(colNormalUnitVec.mul(-1).mul(normalInitialVelR))
-      .add(colNormalUnitVec.mul(-1).mul(normalFinalVelR));
-  }
-
   renderGuideLines(): void {
     this.scene.ctx.save();
     this.scene.ctx.strokeStyle = 'green';
@@ -151,11 +94,11 @@ class Engine {
       for (let j = i + 1; j < iLen; j += 1) {
         const assetR = this.assetList[j];
 
-        const isPenetrating = Engine.isPenetrating(assetL, assetR);
-        if (isPenetrating) Engine.resolvePenetration(assetL, assetR);
+        const isPenetrating = PenetrationKit.isPenetrating(assetL, assetR);
+        if (isPenetrating) PenetrationKit.resolvePenetration(assetL, assetR);
 
-        const isColliding = isPenetrating || Engine.isColliding(assetL, assetR);
-        if (isColliding) Engine.resolveCollision(assetL, assetR);
+        const isColliding = isPenetrating || CollisionKit.isColliding(assetL, assetR);
+        if (isColliding) CollisionKit.resolveCollision(assetL, assetR);
       }
     }
 
