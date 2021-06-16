@@ -19,7 +19,7 @@ class Ball implements GenericBall {
   radius: number;
 
   constructor({ x, y, radius = 1, mass = 1 }: BallProps) {
-    this.radius = radius;
+    this.radius = radius * mass;
     this.mass = mass;
 
     this.pos = new Vector2D(x, y);
