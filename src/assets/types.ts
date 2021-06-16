@@ -1,11 +1,14 @@
 import { Vector2D } from 'utils/vector';
 
 export interface Asset {
-  pos: Vector2D;
+  mass: number;
+
   vel: Vector2D;
+
   grabPos: Vector2D;
   isGrabbed: boolean;
   guideLines: boolean;
+  isFixed: boolean;
 
   shouldGrab: (x: number, y: number) => boolean;
   setGrab: (x: number, y: number) => void;
@@ -18,7 +21,3 @@ export interface Asset {
 }
 
 export type StateUpdateProp = { dt: number; force?: Vector2D };
-
-export interface PointAsset extends Asset {
-  mass: number;
-}

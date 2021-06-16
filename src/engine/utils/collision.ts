@@ -1,5 +1,7 @@
 import Ball from 'assets/ball';
 import { Asset } from 'assets/types';
+import Wall from 'assets/wall';
+import { Vector2D } from 'utils/vector';
 
 export namespace CollisionKit {
   export function isColliding(_assetL: Asset, _assetR: Asset): boolean {
@@ -7,6 +9,33 @@ export namespace CollisionKit {
       const assetL = _assetL as Ball;
       const assetR = _assetR as Ball;
       if (assetL.pos.sub(assetR.pos).mag() === assetL.radius + assetR.radius) {
+        return true;
+      }
+    } else if (
+      (_assetL instanceof Ball && _assetR instanceof Wall) ||
+      (_assetL instanceof Wall && _assetR instanceof Ball)
+    ) {
+      const assetL = (_assetL instanceof Ball ? _assetL : _assetR) as Ball;
+      const assetR = (_assetR instanceof Wall ? _assetR : _assetL) as Wall;
+
+      const wallVec = assetR.startPos.sub(assetR.endPos);
+      const wallUnitVec = wallVec.unit();
+
+      let nearestPointOnLine = assetR.startPos;
+      let projectionVec: Vector2D;
+      const projection = assetR.startPos.sub(assetL.pos).dot(wallUnitVec);
+
+      if (projection > 0) {
+        nearestPointOnLine = assetR.endPos;
+        const secondaryProjection = assetR.endPos.sub(assetL.pos).dot(wallUnitVec);
+
+        if (secondaryProjection < 0) {
+          projectionVec = wallUnitVec.mul(projection);
+          nearestPointOnLine = assetR.startPos.sub(projectionVec);
+        }
+      }
+
+      if (assetL.pos.sub(nearestPointOnLine).mag() === assetL.radius) {
         return true;
       }
     }
@@ -19,13 +48,10 @@ export namespace CollisionKit {
       const assetL = _assetL as Ball;
       const assetR = _assetR as Ball;
 
-      const colNormalVec = assetL.pos.sub(assetR.pos);
-      const colNormalUnitVec = colNormalVec.unit();
+      const colNormalUnitVec = assetL.pos.sub(assetR.pos).unit();
 
       const normalInitialVelL = colNormalUnitVec.dot(assetL.vel);
       const normalInitialVelR = colNormalUnitVec.dot(assetR.vel);
-
-      console.log(normalInitialVelL, normalInitialVelR);
 
       const massSum = assetL.mass + assetR.mass;
 
@@ -43,6 +69,35 @@ export namespace CollisionKit {
       assetR.vel = assetR.vel
         .add(colNormalUnitVec.mul(-normalInitialVelR))
         .add(colNormalUnitVec.mul(normalFinalVelR));
+    } else if (
+      (_assetL instanceof Ball && _assetR instanceof Wall) ||
+      (_assetL instanceof Wall && _assetR instanceof Ball)
+    ) {
+      const assetL = (_assetL instanceof Ball ? _assetL : _assetR) as Ball;
+      const assetR = (_assetR instanceof Wall ? _assetR : _assetL) as Wall;
+
+      const wallVec = assetR.startPos.sub(assetR.endPos);
+      const wallUnitVec = wallVec.unit();
+
+      let nearestPointOnLine = assetR.startPos;
+      let projectionVec: Vector2D;
+      const projection = assetR.startPos.sub(assetL.pos).dot(wallUnitVec);
+
+      if (projection > 0) {
+        nearestPointOnLine = assetR.endPos;
+        const secondaryProjection = assetR.endPos.sub(assetL.pos).dot(wallUnitVec);
+
+        if (secondaryProjection < 0) {
+          projectionVec = wallUnitVec.mul(projection);
+          nearestPointOnLine = assetR.startPos.sub(projectionVec);
+        }
+      }
+
+      const colNormalUnitVec = nearestPointOnLine.sub(assetL.pos).unit();
+
+      const normalInitialVelL = colNormalUnitVec.dot(assetL.vel);
+
+      assetL.vel = assetL.vel.add(colNormalUnitVec.mul(-2 * normalInitialVelL));
     }
   }
 }

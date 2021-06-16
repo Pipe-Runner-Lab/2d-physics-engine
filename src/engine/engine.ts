@@ -1,4 +1,3 @@
-import { GenericBall } from 'assets/ball/types';
 import { Asset } from 'assets/types';
 import Scene from 'scene';
 import { SceneEventType } from 'scene/types';
@@ -60,10 +59,12 @@ class Engine {
 
   renderGuideLines(): void {
     this.scene.ctx.save();
+    this.scene.ctx.beginPath();
     this.scene.ctx.strokeStyle = 'green';
     this.scene.ctx.moveTo(this.grabbedAsset.grabPos.i, this.grabbedAsset.grabPos.j);
     this.scene.ctx.lineTo(this.mousePos.i, this.mousePos.j);
     this.scene.ctx.stroke();
+    this.scene.ctx.closePath();
     this.scene.ctx.restore();
   }
 

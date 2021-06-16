@@ -1,9 +1,9 @@
-import { StateUpdateProp } from 'assets/types';
+import { Asset, StateUpdateProp } from 'assets/types';
 import { ACC_GRAVITY } from 'utils/constant';
 import { Vector2D } from 'utils/vector';
-import { BallProps, GenericBall } from './types';
+import { BallProps } from './types';
 
-class Ball implements GenericBall {
+class Ball implements Asset {
   mass: number;
 
   pos: Vector2D;
@@ -17,6 +17,8 @@ class Ball implements GenericBall {
   guideLines = false;
 
   radius: number;
+
+  isFixed = false;
 
   constructor({ x, y, radius = 1, mass = 1 }: BallProps) {
     this.radius = radius * mass;
