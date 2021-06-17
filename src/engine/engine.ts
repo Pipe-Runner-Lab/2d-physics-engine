@@ -95,10 +95,10 @@ class Engine {
         const assetR = this.assetList[j];
 
         const isPenetrating = PenetrationKit.isPenetrating(assetL, assetR);
-        if (isPenetrating) PenetrationKit.resolvePenetration(assetL, assetR);
-
-        const isColliding = isPenetrating || CollisionKit.isColliding(assetL, assetR);
-        if (isColliding) CollisionKit.resolveCollision(assetL, assetR);
+        if (isPenetrating) {
+          PenetrationKit.resolvePenetration(assetL, assetR);
+          CollisionKit.resolveCollision(assetL, assetR);
+        }
       }
     }
 
