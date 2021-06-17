@@ -1,88 +1,91 @@
 import Ball from 'assets/ball';
 import { Asset } from 'assets/types';
 import Wall from 'assets/wall';
+import { ComputationCacheProps } from 'engine/types';
 import { Vector2D } from 'utils/vector';
 
 export namespace PenetrationKit {
-  export function isPenetrating(_assetL: Asset, _assetR: Asset): boolean {
+  export function isPenetrating(
+    _assetL: Asset,
+    _assetR: Asset
+  ): { isPenetrating: boolean; computationCache?: ComputationCacheProps } {
     if (_assetL instanceof Ball && _assetR instanceof Ball) {
-      const assetL = _assetL as Ball;
-      const assetR = _assetR as Ball;
-      if (assetL.pos.sub(assetR.pos).mag() < assetL.radius + assetR.radius) {
-        return true;
+      const ballL = _assetL as Ball;
+      const ballR = _assetR as Ball;
+      if (ballL.pos.sub(ballR.pos).mag() < ballL.radius + ballR.radius) {
+        return {
+          isPenetrating: true,
+          computationCache: {
+            lineOfActionVector: ballL.pos.sub(ballR.pos)
+          }
+        };
       }
     } else if (
       (_assetL instanceof Ball && _assetR instanceof Wall) ||
       (_assetL instanceof Wall && _assetR instanceof Ball)
     ) {
-      const assetL = (_assetL instanceof Ball ? _assetL : _assetR) as Ball;
-      const assetR = (_assetR instanceof Wall ? _assetR : _assetL) as Wall;
+      const ball = (_assetL instanceof Ball ? _assetL : _assetR) as Ball;
+      const wall = (_assetR instanceof Wall ? _assetR : _assetL) as Wall;
 
-      const wallVec = assetR.startPos.sub(assetR.endPos);
+      const wallVec = wall.startPos.sub(wall.endPos);
       const wallUnitVec = wallVec.unit();
 
-      let nearestPointOnLine = assetR.startPos;
+      let nearestPointOnLine = wall.startPos;
       let projectionVec: Vector2D;
-      const projection = assetR.startPos.sub(assetL.pos).dot(wallUnitVec);
+      const projection = wall.startPos.sub(ball.pos).dot(wallUnitVec);
 
       if (projection > 0) {
-        nearestPointOnLine = assetR.endPos;
-        const secondaryProjection = assetR.endPos.sub(assetL.pos).dot(wallUnitVec);
+        nearestPointOnLine = wall.endPos;
+        const secondaryProjection = wall.endPos.sub(ball.pos).dot(wallUnitVec);
 
         if (secondaryProjection < 0) {
           projectionVec = wallUnitVec.mul(projection);
-          nearestPointOnLine = assetR.startPos.sub(projectionVec);
+          nearestPointOnLine = wall.startPos.sub(projectionVec);
         }
       }
 
-      if (assetL.pos.sub(nearestPointOnLine).mag() < assetL.radius) {
-        return true;
+      if (ball.pos.sub(nearestPointOnLine).mag() < ball.radius) {
+        return {
+          isPenetrating: true,
+          computationCache: {
+            lineOfActionVector: nearestPointOnLine.sub(ball.pos),
+            nearestPointOnLine
+          }
+        };
       }
     }
 
-    return false;
+    return { isPenetrating: false };
   }
 
-  export function resolvePenetration(_assetL: Asset, _assetR: Asset): void {
+  export function resolvePenetration(
+    _assetL: Asset,
+    _assetR: Asset,
+    computationCache: ComputationCacheProps
+  ): void {
     if (_assetL instanceof Ball && _assetR instanceof Ball) {
-      const assetL = _assetL as Ball;
-      const assetR = _assetR as Ball;
+      const ballL = _assetL as Ball;
+      const ballR = _assetR as Ball;
 
-      const penNormalVec = assetL.pos.sub(assetR.pos);
+      const { lineOfActionVector: penNormalVec } = computationCache;
       const penNormalUnitVec = penNormalVec.unit();
 
-      const semiPenDist = (assetL.radius + assetR.radius - penNormalVec.mag()) / 2;
+      const semiPenDist = (ballL.radius + ballR.radius - penNormalVec.mag()) / 2;
 
-      assetL.pos = assetL.pos.add(penNormalUnitVec.mul(semiPenDist));
-      assetR.pos = assetR.pos.add(penNormalUnitVec.mul(-semiPenDist));
+      ballL.pos = ballL.pos.add(penNormalUnitVec.mul(semiPenDist));
+      ballR.pos = ballR.pos.add(penNormalUnitVec.mul(-semiPenDist));
     } else if (
       (_assetL instanceof Ball && _assetR instanceof Wall) ||
       (_assetL instanceof Wall && _assetR instanceof Ball)
     ) {
-      const assetL = (_assetL instanceof Ball ? _assetL : _assetR) as Ball;
-      const assetR = (_assetR instanceof Wall ? _assetR : _assetL) as Wall;
+      const ball = (_assetL instanceof Ball ? _assetL : _assetR) as Ball;
 
-      const wallVec = assetR.startPos.sub(assetR.endPos);
-      const wallUnitVec = wallVec.unit();
+      const { lineOfActionVector: penNormalVec, nearestPointOnLine } = computationCache;
 
-      let nearestPointOnLine = assetR.startPos;
-      let projectionVec: Vector2D;
-      const projection = assetR.startPos.sub(assetL.pos).dot(wallUnitVec);
+      const penDist = ball.radius - ball.pos.sub(nearestPointOnLine).mag();
+      const penNormalUnitVec = penNormalVec.unit();
 
-      if (projection > 0) {
-        nearestPointOnLine = assetR.endPos;
-        const secondaryProjection = assetR.endPos.sub(assetL.pos).dot(wallUnitVec);
-
-        if (secondaryProjection < 0) {
-          projectionVec = wallUnitVec.mul(projection);
-          nearestPointOnLine = assetR.startPos.sub(projectionVec);
-        }
-      }
-
-      const penDist = assetL.radius - assetL.pos.sub(nearestPointOnLine).mag();
-      const penNormalUnitVec = nearestPointOnLine.sub(assetL.pos).unit();
-
-      assetL.pos = assetL.pos.add(penNormalUnitVec.mul(-penDist));
+      ball.pos = ball.pos.add(penNormalUnitVec.mul(-penDist));
     }
   }
 }

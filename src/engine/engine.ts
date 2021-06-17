@@ -94,10 +94,10 @@ class Engine {
       for (let j = i + 1; j < iLen; j += 1) {
         const assetR = this.assetList[j];
 
-        const isPenetrating = PenetrationKit.isPenetrating(assetL, assetR);
+        const { isPenetrating, computationCache } = PenetrationKit.isPenetrating(assetL, assetR);
         if (isPenetrating) {
-          PenetrationKit.resolvePenetration(assetL, assetR);
-          CollisionKit.resolveCollision(assetL, assetR);
+          PenetrationKit.resolvePenetration(assetL, assetR, computationCache);
+          CollisionKit.resolveCollision(assetL, assetR, computationCache);
         }
       }
     }
